@@ -39,4 +39,4 @@ df <- as.data.frame(cbind(x1, activities, subject))
 df_2 <- df %>% group_by(subject, activities) %>% summarise_all(mean)
 
 #Write final table to the file
-write.table(df_2, file='./TidyData.txt')
+write.table(df_2, file='./TidyData.txt', row.name=FALSE)
