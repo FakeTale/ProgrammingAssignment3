@@ -3,7 +3,7 @@ Getting and Cleaning Data Course Project
 
 The purpose of this project is to demonstrate your ability to collect, work with, and clean a data set.
 
-Review criteria
+### Review criteria
 - The submitted data set is tidy.
 - The Github repo contains the required scripts.
 - GitHub contains a code book that modifies and updates the available codebooks with the data to indicate all the variables and summaries calculated, along with units, and any other relevant information.
@@ -22,10 +22,59 @@ Here are the data for the project:
 
 https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
 
-You should create one R script called run_analysis.R that does the following.
+### You should create one R script called run_analysis.R that does the following.
 
 - Merges the training and the test sets to create one data set.
 - Extracts only the measurements on the mean and standard deviation for each measurement.
 - Uses descriptive activity names to name the activities in the data set
 - Appropriately labels the data set with descriptive variable names.
 - From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+## Code explanation
+In the first part of the run_analysis.R we read all the data files. Used header = FALSE parameter because our data starts from the first row.
+```
+x_test <- read.table("./UCI HAR Dataset/test/X_test.txt", header = FALSE)
+y_test <- read.table("./UCI HAR Dataset/test/y_test.txt", header = FALSE)
+s_test <- read.table("./UCI HAR Dataset/test/subject_test.txt", header = FALSE)
+x_train <- read.table("./UCI HAR Dataset/train/X_train.txt", header = FALSE)
+y_train <- read.table("./UCI HAR Dataset/train/y_train.txt", header = FALSE)
+s_train <- read.table("./UCI HAR Dataset/train/subject_train.txt", header = FALSE)
+activity <- read.table("./UCI HAR Dataset/activity_labels.txt", header = FALSE)
+features <- read.table("./UCI HAR Dataset/features.txt", header = FALSE)
+```
+The second step is to merge test and train data. Used rbind because it is the same features, but different subjects.
+```
+x <- as.data.frame(rbind(x_train, x_test))
+y <- as.data.frame(rbind(y_train, y_test))
+subject <- as.data.frame(rbind(s_train, s_test))
+```
+The next part is to get the features names and select only mean and std. Used regular expression to get colums, which content mean() or std() in the name.
+```
+names(x) <- features$V2
+x1 <- x[, grep('.*mean\\(\\)|std\\(\\)', names(x))]
+```
+After that we need to change activity id to its name. Used lookup vector for that and then indexed it according to the y column.
+```
+lookUp <- as.character(activity$V2)
+activities <- lookUp[as.vector(y$V1)]
+```
+Then we make colums names more descriptive. Changed t in the beggining to time and f to freq, replaced '-' with '.' and removed ().
+```
+bnames <- sub('^t', 'time', x = names(x1))
+bnames <- sub('^f', 'freq', x = bnames)
+bnames <- gsub('-', '.', x = bnames)
+bnames <- gsub('\\(\\)', '', x = bnames)
+names(x1) <- bnames
+```
+Next we merge our features with subjects and activity.
+```
+df <- as.data.frame(cbind(x1, activities, subject))
+```
+And finally we aggregate data to get the average of each variable for each activity and each subject.
+```
+df_2 <- df %>% group_by(subject, activities) %>% summarise_all(mean)
+```
+ 
+
+
+
