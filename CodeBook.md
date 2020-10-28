@@ -25,7 +25,7 @@ The gravitational force is assumed to have only low frequency components, theref
 From each window, a vector of features was obtained by calculating variables from the time and frequency domain.
 Features are normalized and bounded within [-1,1].
 
-###TidyData.txt
+### TidyData.txt
 The the file you can find the average of each mean() and std() variable from the original data set grouped by activity and subject.
 
 
